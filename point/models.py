@@ -17,6 +17,19 @@ class Point(models.Model):
     def __str__(self):
         return self.name
 
-class
+class PointMessage(models.Model):
+    """Сообщение на карте"""
+    point = models.ForeignKey(Point, on_delete=models.CASCADE, related_name='messages')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages')
+    message = models.TextField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages')
+    create_at = models.DateTimeField(auto_now_add=True)
+    update_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Сообщение {self.point.name}"
 
 
