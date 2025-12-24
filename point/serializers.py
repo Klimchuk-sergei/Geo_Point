@@ -19,6 +19,7 @@ class LocationField(serializers.Filed):
                 return Point(coordinates[0], coordinates[1], srid=4326)
         raise serializers.ValidationError({'location': 'должен быть json Point с координатами долгота и ширина'})
 
+
 class PointSerializer(serializers.ModelSerializer):
     """Сериализатор точек"""
     created_by = serializers.StringRelatedField(read_only=True)
@@ -32,6 +33,7 @@ class PointSerializer(serializers.ModelSerializer):
         def create(self, validated_data):
             validated_data['created_by'] = self.context.get('request').user
             return super().create(validated_data)
+
 
 class PointMessageSerializer(serializers.ModelSerializer):
     """Сериализатор сообщений на точках"""
@@ -74,4 +76,3 @@ class PointSearchSerializer(serializers.Serializer):
             srid=4326
         )
         return data
-
