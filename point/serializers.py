@@ -1,11 +1,11 @@
 from rest_framework import serializers
 from .models import Point, PointMessage
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point as GeoPoint
 
 
-class LocationField(serializers.Filed):
+class LocationField(serializers.Field):
 
-    def to_representation(selfself, value):
+    def to_representation(self, value):
         """Переводим point в json"""
         if value:
             return {'type': 'Point', 'coordinates': [value.x, value.y]}
@@ -16,28 +16,29 @@ class LocationField(serializers.Filed):
         if isinstance(data, dict) and data.get('type') == 'Point':
             coordinates = data.get('coordinates', [])
             if len(coordinates) >= 2:
-                return Point(coordinates[0], coordinates[1], srid=4326)
+                return GeoPoint(coordinates[0], coordinates[1], srid=4326)
         raise serializers.ValidationError({'location': 'должен быть json Point с координатами долгота и ширина'})
 
 
 class PointSerializer(serializers.ModelSerializer):
     """Сериализатор точек"""
     created_by = serializers.StringRelatedField(read_only=True)
-    location = LocationField(read_only=True)
+    location = LocationField()
 
     class Meta:
         model = Point
         fields = '__all__'
         read_only_fields = ['created_by', 'created_at', 'updated_at']
 
-        def create(self, validated_data):
-            validated_data['created_by'] = self.context.get('request').user
-            return super().create(validated_data)
+    def create(self, validated_data):
+        validated_data['created_by'] = self.context.get('request').user
+        return super().create(validated_data)
 
 
 class PointMessageSerializer(serializers.ModelSerializer):
     """Сериализатор сообщений на точках"""
     user = serializers.StringRelatedField(read_only=True)
+
     point = serializers.PrimaryKeyRelatedField(queryset=Point.objects.all())
 
     class Meta:
@@ -70,7 +71,8 @@ class PointSearchSerializer(serializers.Serializer):
 
     def validate(self, data):
         """Создаем точку из координат"""
-        data['location'] = Point(
+
+        data['location'] = GeoPoint(
             data['longitude'],
             data['latitude'],
             srid=4326
