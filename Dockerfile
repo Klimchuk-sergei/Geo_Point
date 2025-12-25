@@ -15,11 +15,10 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --no-cache-dir poetry
 
 # 3. Копируем ТОЛЬКО файлы зависимостей (для кэширования слоя)
-COPY pyproject.toml .
+COPY pyproject.toml poetry.lock ./
 
 # 4. Устанавливаем Python-зависимости (этот слой закэшируется, пока не изменится pyproject.toml)
 RUN poetry config virtualenvs.create false && \
-    poetry lock --no-interaction --no-ansi && \
     poetry install --no-interaction --no-ansi --no-root
 
 # 5. ТЕПЕРЬ копируем весь исходный код проекта
