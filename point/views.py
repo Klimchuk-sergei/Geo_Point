@@ -3,8 +3,9 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.decorators import action
+from .permissions import IsOwnerOrReadOnly
 
 from .models import Point, PointMessage
 from .serializers import (
@@ -16,16 +17,13 @@ from .serializers import (
 
 class PointViewSet(viewsets.ModelViewSet):
     """вьюс для работы с точками"""
-    queryset = Point.objects.all()
+    queryset = Point.objects.all().select_related('created_by')
     serializer_class = PointSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticatedOrReadOnly]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['created_at', 'updated_at']
     ordering = ['-created_at']
-
-    def get_queryset(self):
-        return self.queryset.filter(created_by=self.request.user)
 
     @action(detail=False, methods=['get'])
     def search(self, request):
@@ -42,6 +40,7 @@ class PointViewSet(viewsets.ModelViewSet):
         location = data['location']
         radius = data['radius']
 
+        # поиск всех точек в заданном радиусе
         points = Point.objects.filter(
             location__distance_lte=(location, D(m=radius)),
             created_by=request.user  # Фильтр по пользователю
@@ -60,15 +59,12 @@ class PointViewSet(viewsets.ModelViewSet):
 
 class PointMessageViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с сообщениями точек"""
-    queryset = PointMessage.objects.all()
+    queryset = PointMessage.objects.all().select_related('user', 'point')
     serializer_class = PointMessageSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticatedOrReadOnly]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at', 'updated_at']
     ordering = ['-created_at']
-
-    def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -88,17 +84,16 @@ class PointMessageViewSet(viewsets.ModelViewSet):
         location = data['location']
         radius = data['radius']
 
-        # Поиск точек в радиусе
-        points_in_radius = Point.objects.filter(
-            location__distance_lte=(location, D(m=radius)),
-            created_by=request.user
-        )
+        # получаем id точек в заданном радиусе
+        points_in_radius_ids = Point.objects.filter(
+            location__distance_lte=(location, D(m=radius))
+        ).values_list('id', flat=True)
 
-        # Получаем сообщения для найденных точек
+
+        # получаем сообщения в найледенных точках
         messages = PointMessage.objects.filter(
-            point__in=points_in_radius,
-            user=request.user
-        ).select_related('point')
+            point_id__in=points_in_radius_ids
+        ).select_related('point', 'user').order_by('-created_at')
 
         page = self.paginate_queryset(messages)
         if page is not None:
