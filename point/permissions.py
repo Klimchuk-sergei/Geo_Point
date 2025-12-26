@@ -8,4 +8,4 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         owner = getattr(obj, 'created_by', getattr(obj, 'user', None))
-        return owner == request.request.user
+        return owner == request.user

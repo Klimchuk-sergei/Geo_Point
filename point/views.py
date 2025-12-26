@@ -3,7 +3,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from .permissions import IsOwnerOrReadOnly
 
@@ -19,7 +19,7 @@ class PointViewSet(viewsets.ModelViewSet):
     """вьюс для работы с точками"""
     queryset = Point.objects.all().select_related('created_by')
     serializer_class = PointSerializer
-    permission_classes = [IsOwnerOrReadOnly, IsAuthenticatedOrReadOnly]
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['created_at', 'updated_at']
@@ -61,7 +61,7 @@ class PointMessageViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с сообщениями точек"""
     queryset = PointMessage.objects.all().select_related('user', 'point')
     serializer_class = PointMessageSerializer
-    permission_classes = [IsOwnerOrReadOnly, IsAuthenticatedOrReadOnly]
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at', 'updated_at']
     ordering = ['-created_at']
