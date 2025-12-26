@@ -1,11 +1,12 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import PointViewSet, PointMessageViewSet
+
+from .views import PointMessageViewSet, PointViewSet
 
 router = DefaultRouter()
-router.register(r'points', PointViewSet, basename='point')
-router.register(r'points/messages', PointMessageViewSet, basename='pointmessage')
+router.register(r"points", PointViewSet, basename="point")
+router.register(r"points/messages", PointMessageViewSet, basename="pointmessage")
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]

@@ -25,4 +25,24 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.2"
 pytest-django = "^4.11.1"
+black = "^24.3.0"
+isort = "^5.13.0"
+flake8 = "^7.0.0"
+
+[tool.black]
+line-length = 120
+target-version = ['py311']
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | \.idea
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = ["migrations", ".venv"]
 
