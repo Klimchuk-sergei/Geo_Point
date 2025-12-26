@@ -6,11 +6,15 @@ authors = [
     {name = "Klimchuk-sergei",email = "klim.work@mail.ru"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
-    "django (>=6.0,<7.0)",
-    "djangorestframework (>=3.16.1,<4.0.0)",
-    "psycopg2-binary (>=2.9.11,<3.0.0)"
+    "django (>=4.2,<5.0)",
+    "djangorestframework (>=3.14,<4.0.0)",
+    "psycopg2-binary (>=2.9.11,<3.0.0)",
+    "django-cors-headers (>=4.3.0,<5.0.0)",
+    "python-dotenv (>=1.2.1,<2.0.0)",
+    "djangorestframework-simplejwt (>=5.5.1,<6.0.0)",
+    "django-filter (>=22.1,<23.0)"
 ]
 
 
@@ -21,4 +25,24 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.2"
 pytest-django = "^4.11.1"
+black = "^24.3.0"
+isort = "^5.13.0"
+flake8 = "^7.0.0"
+
+[tool.black]
+line-length = 120
+target-version = ['py311']
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | \.idea
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = ["migrations", ".venv"]
 
